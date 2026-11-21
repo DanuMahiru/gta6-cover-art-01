@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vice Cover Studio — GTA-style cover art from your photos</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<main class="app">
+  <section class="preview" id="dropzone">
+    <div class="preview-bar">
+      <span class="preview-title">Live preview — click a panel to edit it, drag to move its photo</span>
+      <span class="preview-hint">scroll to zoom · click a tray photo to fill the selected panel</span>
+    </div>
+    <canvas id="cover" width="1080" height="1080" aria-label="The cover preview"></canvas>
+  </section>
+
+  <aside class="controls">
+    <header>
+      <h1>Vice Cover Studio</h1>
+      <p>Your photos become GTA-style cover art. Everything runs on your machine — no uploads, no account.</p>
+    </header>
+
+    <section class="group">
+      <h2>Photos</h2>
+      <label class="file">Add your photos
+        <input id="photo" type="file" accept="image/*" multiple>
+      </label>
+      <div class="row">
+        <button id="samples" type="button">Use the samples</button>
+        <button id="autofill" type="button">Auto-fill panels</button>
+      </div>
+      <div id="tray" class="tray" aria-label="Your photos"></div>
+      <p class="note">Drop image files anywhere on the preview to add them.</p>
+    </section>
+
+    <section class="group">
+      <h2>Layout</h2>
+      <div id="layouts" class="picks" role="group" aria-label="Poster layout"></div>
+    </section>
+
+    <section class="group">
+      <h2>Colour grade</h2>
+      <div id="grades" class="picks" role="group" aria-label="Colour grade"></div>
+    </section>
+
+    <section class="group">
+      <h2>Words</h2>
+      <label>Title <input id="title" type="text" maxlength="30" value="SUNSET HEIST"></label>
+      <label>Subtitle, in script <input id="subtitle" type="text" maxlength="40" value="one last summer"></label>
+      <label>Tagline <input id="tagline" type="text" maxlength="48" value="Every sunset has a price"></label>
+      <label>Press quote <input id="quote" type="text" maxlength="48" value="GOLDEN HOUR, CRIMINAL INTENT"></label>
+      <label>Quoted by <input id="source" type="text" maxlength="32" value="THE SUNSET GAZETTE"></label>
+    </section>
+
+    <section class="group">
+      <h2>Selected panel</h2>
+      <label>Role tag <input id="role" type="text" maxlength="18" value="THE DRIVER"></label>
+      <label>Zoom <input id="zoom" type="range" min="100" max="300" value="100"> <span class="zoom-val">100%</span></label>
+    </section>
+
+    <section class="group">
+      <h2>Export</h2>
+      <div id="sizes" class="picks" role="group" aria-label="Export size"></div>
+      <button id="export" type="button" class="export">Export PNG</button>
+      <p id="status" role="status"></p>
+    </section>
+  </aside>
+</main>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
