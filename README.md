@@ -5,8 +5,9 @@
 [![reward](https://make.fun/badge/gta6-cover-art-01/DanuMahiru/gta6-cover-art-01/reward.svg)](https://make.fun/bounty/gta6-cover-art-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-cover-art-01)
 
 Turn your photos into GTA-style cover art: a multi-panel movie poster with
-a hero close-up, role tags, a striped retro-chrome title, a script subtitle,
-a press quote, a gold seal and a billing block — exported as a PNG to share.
+a hero close-up that pops out of its panel as a cut-out, role tags, a wide
+striped retro-chrome title, a script subtitle, a press quote, a gold seal
+and a billing block — exported as a PNG to share.
 
 ## Try it
 
@@ -21,9 +22,10 @@ machine.
 ## What it does
 
 - **6 poster layouts** — Vice Classic, Golden Mile, Motel Court, Sunset
-  Strip, Cast Wall, Solo Star — each a multi-panel grid with a hero close-up.
-- **Any photo** — upload your own, drag and drop, or use the built-in
-  samples. Click a panel to select it, drag to move its photo, scroll or
+  Strip, Cast Wall, Solo Star — each a multi-panel grid with a hero close-up
+  that bursts out of its panel as a sticker cut-out (toggleable).
+- **Any photo** — upload your own, drag and drop, or use the six built-in
+  sample photos. Click a panel to select it, drag to move its photo, scroll or
   slide to zoom, set its focus point, and edit its role tag.
 - **6 colour grades** — Sunset, Neon Nights, Vice City, Golden Hour, Noir,
   Miami Pop — painted over every panel.
@@ -45,9 +47,19 @@ machine.
   `src/poster.js` (the render engine), `src/editor.js` (the editor),
   `src/main.js`, `src/shots.js`, `fonts/` (Anton and Great Vibes, both
   SIL Open Font License — see the OFL texts beside them) and `samples/`
-  (two photos made for make.fun, free to use).
+  (six photos made for make.fun, free to use).
 - `screenshots/` — 3–4 screenshots of the app at work; the first by name
   is the cover. `shots.json` lists the scenes that made them.
+
+## v2
+
+v2 (21 Nov 2026) answers the first version's weak spots — v1 scored
+821,750 (rank 772) on make.fun: the chrome title is wider (taller title
+band, bigger letters, tighter layer crop), the hero photo pops out of its
+panel as a white-bordered cut-out, and the built-in samples grew from two
+faces to six so the panels stop repeating the same people. Everything v1
+did — 6 layouts, 6 grades, 3 export sizes, role tags, seal, billing block,
+barcode — is still here.
 
 ## Hand it in
 

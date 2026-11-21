@@ -1,4 +1,4 @@
-// Vice Cover Studio — the entrypoint (Node 22, standard library only).
+// Vice Cover Studio v2 — the entrypoint (Node 22, standard library only).
 //
 // Hands the app in: it copies app/ and screenshots/ from beside this file
 // to the output directory and writes output/dossier.json, the summary the
@@ -76,5 +76,5 @@ writeFileSync(
 );
 
 console.log(
-  `handed in: app/ (${app.files} files, ${app.bytes} bytes) + ${shots.length} screenshots -> ${out}`,
+  `handed in v2: app/ (${app.files} files, ${app.bytes} bytes) + ${shots.length} screenshots -> ${out}`,
 );

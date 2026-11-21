@@ -3,9 +3,14 @@
 // Owns the poster state, the photo tray, the panel controls and the live
 // preview. The poster itself is drawn by poster.js; this file only wires
 // the page to it. Photos live on the person's machine: uploads use object
-// URLs, the built-in samples are files under app/samples/.
+// URLs, the built-in samples are files under app/samples/. v2: six
+// built-in samples instead of two, and a hero pop-out toggle.
 
 import { drawPoster, renderCover, layoutById, gradeById, LAYOUTS, GRADES, EXPORT_SIZES, DEFAULT_ROLES } from './poster.js';
+
+// The built-in samples, in tray order. v2 ships six faces so the panels
+// stop repeating the same two people; the two v1 samples still work.
+export const SAMPLES = ['pier', 'boulevard', 'rooftop', 'street', 'beach', 'diner'];
 
 export function loadImage(url) {
   return new Promise((resolve, reject) => {
@@ -26,6 +31,7 @@ export function createEditor(els) {
     layoutId: 'classic',
     gradeId: 'sunset',
     sizeId: '1080x1080',
+    popout: true, // v2: the hero photo bursts out of its panel as a cut-out
     panels: [],
   };
   const tray = []; // { name, img }
@@ -140,7 +146,7 @@ export function createEditor(els) {
   }
 
   async function loadSamples() {
-    for (const name of ['pier', 'boulevard']) {
+    for (const name of SAMPLES) {
       try {
         await loadSample(name);
       } catch {
@@ -227,6 +233,15 @@ export function createEditor(els) {
         });
         els.sizePicker.appendChild(b);
       }
+    }
+    // Hero pop-out toggle (v2): on by default; unchecking keeps the hero
+    // inside its panel, exactly like v1.
+    if (els.popoutInput) {
+      els.popoutInput.checked = state.popout;
+      els.popoutInput.addEventListener('change', () => {
+        state.popout = els.popoutInput.checked;
+        queueDraw();
+      });
     }
     // Photo upload + drag and drop.
     if (els.photoInput) {
@@ -343,6 +358,7 @@ export function createEditor(els) {
     setSubtitle(t) { state.subtitle = t; if (els.subtitleInput) els.subtitleInput.value = t; queueDraw(); },
     setLayout(id) { state.layoutId = id; syncPanels(); queueDraw(); },
     setGrade(id) { state.gradeId = id; queueDraw(); },
+    setPopout(v) { state.popout = !!v; if (els.popoutInput) els.popoutInput.checked = state.popout; queueDraw(); },
     setSize(id) { state.sizeId = id; setPreviewSize(); },
     setPreviewSizeForShot(w, h) {
       previewSize = { w, h };

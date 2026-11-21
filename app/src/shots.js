@@ -3,6 +3,10 @@
 // Query: photo (sample name), title, subtitle, layout, grade, w, h.
 // window.__shotReady is set once the scene painted; ?shot=export-test also
 // proves the PNG export path by writing the blob size into document.title.
+// v2: every sample is loaded, so auto-fill spreads six different faces
+// across the panels instead of repeating two.
+
+import { SAMPLES } from './editor.js';
 
 export async function runShot(shot, query, editor, loadImage) {
   const photo = query.get('photo') ?? 'pier';
@@ -28,13 +32,16 @@ export async function runShot(shot, query, editor, loadImage) {
   } catch {
     // A missing sample leaves the panels empty; the scene still renders.
   }
-  // Load the other sample too, so the panels show different photos instead
-  // of the same face six times.
-  const other = photo === 'pier' ? 'boulevard' : 'pier';
-  try {
-    await editor.loadSample(other);
-  } catch {
-    // As above: not fatal.
+  // Load every other sample too, so the panels show different faces instead
+  // of the same one six times. v2 ships six samples; the chosen photo loads
+  // first and keeps the hero panel.
+  for (const name of SAMPLES) {
+    if (name === photo) continue;
+    try {
+      await editor.loadSample(name);
+    } catch {
+      // As above: not fatal.
+    }
   }
   editor.autoFill();
 

@@ -45,7 +45,7 @@ export const LAYOUTS = [
     id: 'classic', name: 'Vice Classic',
     describe: (W, H) => {
       const g = 0.008 * W;
-      const top = 0.058 * H, mid = 0.415 * H, bot = 0.715 * H, end = 0.948 * H;
+      const top = 0.058 * H, mid = 0.40 * H, bot = 0.72 * H, end = 0.948 * H;
       const topRow = grid(W, H, 4, 1, 0.014 * W, top, 0.986 * W, mid - 0.012 * H, g);
       const botRow = grid(W, H, 3, 1, 0.014 * W, bot, 0.986 * W, end, g);
       // The hero is the second panel of the top row, widened into its neighbour.
@@ -61,10 +61,11 @@ export const LAYOUTS = [
       const top = 0.058 * H, end = 0.948 * H;
       const left = { x: 0.014 * W, y: top, w: 0.42 * W, h: end - top, hero: true };
       const right = grid(W, H, 2, 2, 0.442 * W, top, 0.986 * W, end, g);
-      // The title rides across the lower middle, over the panels.
+      // The title rides across the lower middle, over the panels. v2 gives
+      // it a taller band so the letters can stretch wider.
       return {
         panels: [left, ...right],
-        title: { x: 0.014 * W, y: 0.56 * H, w: 0.972 * W, h: 0.26 * H, overlay: true },
+        title: { x: 0.014 * W, y: 0.54 * H, w: 0.972 * W, h: 0.30 * H, overlay: true },
       };
     },
   },
@@ -72,7 +73,7 @@ export const LAYOUTS = [
     id: 'motel', name: 'Motel Court',
     describe: (W, H) => {
       const g = 0.008 * W;
-      const top = 0.058 * H, mid = 0.40 * H, bot = 0.70 * H, end = 0.948 * H;
+      const top = 0.058 * H, mid = 0.39 * H, bot = 0.71 * H, end = 0.948 * H;
       const topRow = grid(W, H, 3, 1, 0.014 * W, top, 0.986 * W, mid - 0.012 * H, g);
       const hero = { ...topRow[0], w: topRow[0].w + topRow[1].w + g, hero: true };
       const botRow = grid(W, H, 3, 1, 0.014 * W, bot, 0.986 * W, end, g);
@@ -88,7 +89,7 @@ export const LAYOUTS = [
     describe: (W, H) => {
       const g = 0.008 * W;
       const top = 0.058 * H, end = 0.948 * H;
-      const titleH = 0.26 * H;
+      const titleH = 0.30 * H;
       const rows = grid(W, H, 3, 2, 0.014 * W, top + titleH + 0.012 * H, 0.986 * W, end, g);
       rows[0].hero = true;
       return {
@@ -101,7 +102,7 @@ export const LAYOUTS = [
     id: 'castwall', name: 'Cast Wall',
     describe: (W, H) => {
       const g = 0.008 * W;
-      const top = 0.058 * H, mid = 0.40 * H, bot = 0.70 * H, end = 0.948 * H;
+      const top = 0.058 * H, mid = 0.39 * H, bot = 0.71 * H, end = 0.948 * H;
       const topRow = grid(W, H, 3, 1, 0.014 * W, top, 0.986 * W, mid - 0.012 * H, g);
       const hero = { ...topRow[1], hero: true };
       const botRow = grid(W, H, 4, 1, 0.014 * W, bot, 0.986 * W, end, g);
@@ -120,7 +121,7 @@ export const LAYOUTS = [
       const botRow = grid(W, H, 2, 1, 0.014 * W, 0.875 * H, 0.986 * W, end, g);
       return {
         panels: [hero, ...botRow],
-        title: { x: 0.014 * W, y: 0.635 * H, w: 0.972 * W, h: 0.225 * H, overlay: false },
+        title: { x: 0.014 * W, y: 0.625 * H, w: 0.972 * W, h: 0.25 * H, overlay: false },
       };
     },
   },
@@ -258,7 +259,72 @@ function drawRoleTag(ctx, rect, role, atTop, scale) {
   ctx.restore();
 }
 
-function drawPanel(ctx, rect, panel, grade, isBottomRow) {
+// Paint a photo into a rect (cover fit, focus point, zoom, grade tint,
+// vignette). Shared by panels and the hero cut-out so the pop-out shows
+// the same graded photo, not a pasted copy. The caller sets the clip.
+function paintPhotoInto(ctx, rect, panel, grade) {
+  ctx.filter = grade.filter;
+  const d = coverDrawRect(panel.photo, rect, panel.fx ?? 0.5, panel.fy ?? 0.35, panel.zoom ?? 1);
+  ctx.drawImage(panel.photo, d.dx, d.dy, d.dw, d.dh);
+  ctx.filter = 'none';
+  for (const o of grade.overlays) {
+    const g = ctx.createLinearGradient(0, rect.y, 0, rect.y + rect.h);
+    g.addColorStop(0, o.top);
+    g.addColorStop(1, o.bottom);
+    ctx.globalCompositeOperation = o.mode;
+    ctx.fillStyle = g;
+    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  // Vignette: darker corners so the photo reads as one picture.
+  const v = ctx.createRadialGradient(
+    rect.x + rect.w / 2, rect.y + rect.h / 2, Math.min(rect.w, rect.h) * 0.35,
+    rect.x + rect.w / 2, rect.y + rect.h / 2, Math.max(rect.w, rect.h) * 0.75,
+  );
+  v.addColorStop(0, 'rgba(0,0,0,0)');
+  v.addColorStop(1, 'rgba(10,2,20,0.35)');
+  ctx.fillStyle = v;
+  ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+}
+
+// The v2 hero cut-out: the hero photo bursts out of its panel — painted
+// again larger than the panel, with a thick white border and a drop shadow —
+// so it reads as a sticker cut-out instead of just a bigger frame. Returns
+// the cut-out rect so the hero's role tag can ride on it.
+function drawHeroCutout(ctx, heroRect, panel, grade, W, H) {
+  const dx = 0.035 * W, dy = 0.045 * H;
+  let w = Math.min(heroRect.w + dx * 2, 0.97 * W);
+  let h = Math.min(heroRect.h + dy * 2, 0.90 * H);
+  let x = Math.min(Math.max(heroRect.x - dx, 0.008 * W), 0.992 * W - w);
+  let y = Math.min(Math.max(heroRect.y - dy, 0.045 * H), 0.968 * H - h);
+  const cut = { x, y, w, h };
+  const r = Math.min(22, cut.w * 0.045);
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 22;
+  ctx.shadowOffsetY = 8;
+  roundRectPath(ctx, cut.x, cut.y, cut.w, cut.h, r);
+  ctx.fillStyle = '#111';
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  roundRectPath(ctx, cut.x, cut.y, cut.w, cut.h, r);
+  ctx.clip();
+  paintPhotoInto(ctx, cut, panel, grade);
+  ctx.restore();
+  ctx.save();
+  roundRectPath(ctx, cut.x, cut.y, cut.w, cut.h, r);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = Math.max(5, W * 0.006);
+  ctx.stroke();
+  ctx.restore();
+  return cut;
+}
+
+// Panel frame: photo, hairline frame, role tag. Set showTag=false when the
+// caller draws the tags later (after the hero pop-out), so no tag ends up
+// hidden behind the cut-out.
+function drawPanel(ctx, rect, panel, grade, isBottomRow, showTag = true) {
   const r = Math.min(10, rect.w * 0.02);
   ctx.save();
   roundRectPath(ctx, rect.x, rect.y, rect.w, rect.h, r);
@@ -266,28 +332,7 @@ function drawPanel(ctx, rect, panel, grade, isBottomRow) {
   ctx.fillStyle = '#1c0b28';
   ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
   if (panel.photo) {
-    ctx.filter = grade.filter;
-    const d = coverDrawRect(panel.photo, rect, panel.fx ?? 0.5, panel.fy ?? 0.35, panel.zoom ?? 1);
-    ctx.drawImage(panel.photo, d.dx, d.dy, d.dw, d.dh);
-    ctx.filter = 'none';
-    for (const o of grade.overlays) {
-      const g = ctx.createLinearGradient(0, rect.y, 0, rect.y + rect.h);
-      g.addColorStop(0, o.top);
-      g.addColorStop(1, o.bottom);
-      ctx.globalCompositeOperation = o.mode;
-      ctx.fillStyle = g;
-      ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
-    }
-    ctx.globalCompositeOperation = 'source-over';
-    // Vignette: darker corners so the panel reads as one photo.
-    const v = ctx.createRadialGradient(
-      rect.x + rect.w / 2, rect.y + rect.h / 2, Math.min(rect.w, rect.h) * 0.35,
-      rect.x + rect.w / 2, rect.y + rect.h / 2, Math.max(rect.w, rect.h) * 0.75,
-    );
-    v.addColorStop(0, 'rgba(0,0,0,0)');
-    v.addColorStop(1, 'rgba(10,2,20,0.35)');
-    ctx.fillStyle = v;
-    ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+    paintPhotoInto(ctx, rect, panel, grade);
   } else {
     ctx.strokeStyle = 'rgba(255,201,61,0.5)';
     ctx.lineWidth = 2;
@@ -308,7 +353,7 @@ function drawPanel(ctx, rect, panel, grade, isBottomRow) {
   ctx.lineWidth = Math.max(1.5, rect.w * 0.004);
   ctx.stroke();
   ctx.restore();
-  drawRoleTag(ctx, rect, panel.role, isBottomRow, 1);
+  if (showTag) drawRoleTag(ctx, rect, panel.role, isBottomRow, 1);
 }
 
 // ------------------------------------------------------------- chrome title
@@ -319,23 +364,25 @@ function chromeTitleLayer(text, size, maxW) {
   const probe = document.createElement('canvas').getContext('2d');
   let px = size;
   probe.font = `${px}px Anton, sans-serif`;
-  const squeeze = 0.88;
+  const squeeze = 0.92;
   while (probe.measureText(text).width * squeeze > maxW && px > 12) {
     px -= 2;
     probe.font = `${px}px Anton, sans-serif`;
   }
   const tw = probe.measureText(text).width * squeeze;
-  // Tight layer: just enough room for the letters, their extrusion and the
-  // outline. A padded layer would make the height cap in drawPoster shrink
-  // the whole title far below the size the zone allows.
+  // Tight layer, v2: the canvas is cropped close to the ink (cap height
+  // 0.72px + extrusion 0.15px + stroke), not padded to 1.50px. A tall
+  // mostly-empty layer makes the height cap in drawPoster shrink the whole
+  // title far below the size the zone allows — this crop alone makes the
+  // title roughly 40% wider at the same zone height.
   const padX = px * 0.10;
-  const padY = px * 0.12;
+  const padY = px * 0.10;
   const layer = document.createElement('canvas');
   layer.width = Math.ceil(tw + padX * 2);
-  layer.height = Math.ceil(px * 1.50);
+  layer.height = Math.ceil(px * 1.22);
   const c = layer.getContext('2d');
   const cx = layer.width / 2;
-  const baseline = padY + px * 1.02;
+  const baseline = padY + px * 0.80;
   c.save();
   c.translate(cx, baseline);
   c.scale(squeeze, 1);
@@ -553,12 +600,31 @@ export function drawPoster(ctx, W, H, state) {
   // Panels.
   const titleTop = geo.title.y;
   const titleBottom = geo.title.y + geo.title.h;
+  // Panels first, without tags — the tags are drawn last, on top of the
+  // hero pop-out, so none of them hides behind the cut-out.
   geo.panels.forEach((rect, i) => {
     const panel = state.panels[i] || {};
     const isBottomRow = rect.y + rect.h / 2 > titleBottom;
-    drawPanel(ctx, rect, { ...panel, role: panel.role ?? DEFAULT_ROLES[i % DEFAULT_ROLES.length] }, grade, isBottomRow);
+    drawPanel(ctx, rect, { ...panel, role: panel.role ?? DEFAULT_ROLES[i % DEFAULT_ROLES.length] }, grade, isBottomRow, false);
   });
   if (geo.sign) drawMotelSign(ctx, geo.sign);
+
+  // v2 hero pop-out: the hero photo bursts out of its panel as a sticker
+  // cut-out, over the neighbouring panels and the title band's edge.
+  const heroIdx = geo.panels.findIndex((r) => r.hero);
+  let cutRect = null;
+  if (state.popout !== false && heroIdx >= 0) {
+    const heroPanel = state.panels[heroIdx] || {};
+    if (heroPanel.photo) cutRect = drawHeroCutout(ctx, geo.panels[heroIdx], heroPanel, grade, W, H);
+  }
+
+  // Role tags on top of everything — the hero's tag rides its cut-out.
+  geo.panels.forEach((rect, i) => {
+    const panel = state.panels[i] || {};
+    const isBottomRow = rect.y + rect.h / 2 > titleBottom;
+    const tagRect = (i === heroIdx && cutRect) ? cutRect : rect;
+    drawRoleTag(ctx, tagRect, panel.role ?? DEFAULT_ROLES[i % DEFAULT_ROLES.length], isBottomRow, 1);
+  });
 
   // Title zone.
   const tz = geo.title;
@@ -572,12 +638,14 @@ export function drawPoster(ctx, W, H, state) {
     ctx.fillRect(0, tz.y - 20 * S, W, tz.h + 40 * S);
   }
   const titleText = (state.title || 'SUNSET HEIST').trim().toUpperCase() || 'SUNSET HEIST';
-  // The zone is a strict vertical budget: title 0.02–0.56, subtitle centred
-  // on 0.70, tagline 0.83–0.98. Nothing may spill into the panels below.
-  const titleLayer = chromeTitleLayer(titleText, tz.h * 0.52, tz.w * 0.98);
+  // The zone is a strict vertical budget: title 0.02–0.62, subtitle centred
+  // on 0.72, tagline 0.85–0.98. Nothing may spill into the panels below.
+  // v2: the title starts bigger and the height cap is taller, so the chrome
+  // letters stretch much wider than in v1.
+  const titleLayer = chromeTitleLayer(titleText, tz.h * 0.62, tz.w * 0.98);
   let titleDrawW = Math.min(titleLayer.width, tz.w * 0.98);
   let titleDrawH = titleLayer.height * (titleDrawW / titleLayer.width);
-  const maxTitleH = tz.h * 0.54;
+  const maxTitleH = tz.h * 0.60;
   if (titleDrawH > maxTitleH) {
     titleDrawH = maxTitleH;
     titleDrawW = titleLayer.width * (titleDrawH / titleLayer.height);
@@ -590,13 +658,13 @@ export function drawPoster(ctx, W, H, state) {
     const subLayer = scriptLayer(sub, tz.h * 0.30, tz.w * 0.9);
     let sw = Math.min(subLayer.width, tz.w * 0.9);
     let sh = subLayer.height * (sw / subLayer.width);
-    const maxSubH = tz.h * 0.26;
+    const maxSubH = tz.h * 0.24;
     if (sh > maxSubH) {
       sh = maxSubH;
       sw = subLayer.width * (sh / subLayer.height);
     }
     ctx.save();
-    ctx.translate(tz.x + tz.w / 2, tz.y + tz.h * 0.70);
+    ctx.translate(tz.x + tz.w / 2, tz.y + tz.h * 0.72);
     ctx.rotate(-0.045);
     ctx.drawImage(subLayer, -sw / 2, -sh / 2, sw, sh);
     ctx.restore();

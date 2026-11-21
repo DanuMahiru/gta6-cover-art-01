@@ -3,6 +3,7 @@
 // Loads the vendored fonts, builds the editor, and, when the page is opened
 // with a ?shot= query, sets up one fixed scene for a screenshot instead of
 // the interactive editor. window.__shotReady is set once the scene painted.
+// v2: the editor also wires the hero pop-out toggle (see editor.js).
 
 import { createEditor, loadImage } from './editor.js';
 import { runShot } from './shots.js';
@@ -20,6 +21,7 @@ const els = {
   layoutPicker: document.getElementById('layouts'),
   gradePicker: document.getElementById('grades'),
   sizePicker: document.getElementById('sizes'),
+  popoutInput: document.getElementById('popout'),
   roleInput: document.getElementById('role'),
   zoomInput: document.getElementById('zoom'),
   samplesButton: document.getElementById('samples'),

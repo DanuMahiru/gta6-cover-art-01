@@ -112,6 +112,9 @@ input[type=text]:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
 
 input[type=range] { accent-color: var(--gold); }
 
+.check { flex-direction: row; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+.check input { accent-color: var(--gold); width: 16px; height: 16px; }
+
 .file {
   padding: 12px;
   border: 1px dashed var(--panel-edge);

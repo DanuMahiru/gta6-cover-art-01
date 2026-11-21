@@ -1,4 +1,4 @@
-// Vice Cover Studio — a tiny static server for app/ (Node 22, standard
+// Vice Cover Studio v2 — a tiny static server for app/ (Node 22, standard
 // library only), so the entry can be tried locally without a build step:
 //   node serve.ts [--port 8080]
 // It serves app/ on http://localhost:8080, sends the MIME types an offline
